@@ -7,7 +7,6 @@ export class ChatHandler {
 
     private async onUpdate(update: TUpdate) {
         const message = update.message;
-        console.log(message);
         if (message) {
             const text = message.text;
             await telegram.sendMessage(message.chat.id, text);

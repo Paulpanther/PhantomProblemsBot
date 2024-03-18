@@ -66,18 +66,26 @@ class Telegram {
     private static updateIntervalMillis = 1000;
     private lastUpdateId?: number;
     private callbacks: Array<(update: TUpdate) => Promise<void>> = [];
+    private inUpdate = false;
 
     public constructor() {
         setInterval(async () => {
-            const updates = await this.getUpdates(this.lastUpdateId ? this.lastUpdateId + 1 : undefined);
-            if (updates.length === 0) return;
+            if (this.inUpdate) return;
+            this.inUpdate = true;
 
-            this.lastUpdateId = updates[updates.length - 1].update_id;
+            try {
+                const updates = await this.getUpdates(this.lastUpdateId ? this.lastUpdateId + 1 : undefined);
+                if (updates.length === 0) return;
 
-            for (const update of updates) {
-                for (const callback of this.callbacks) {
-                    await callback(update);
+                this.lastUpdateId = updates[updates.length - 1].update_id;
+
+                for (const update of updates) {
+                    for (const callback of this.callbacks) {
+                        await callback(update);
+                    }
                 }
+            } finally {
+                this.inUpdate = false;
             }
         }, Telegram.updateIntervalMillis);
     }
@@ -133,9 +141,10 @@ class Telegram {
     private async request<T>(method: string, params: Record<string, any>): Promise<T> {
         const body =
             Object.fromEntries(Object.entries(params)
-                .filter(([key, value]) => value)
-                .map(([key, value]) => [key, JSON.stringify(value)]));
+                .filter(([key, value]) => value));
         const url = `https://api.telegram.org/bot${token}/${method}`;
+        console.log(url);
+        console.log(body);
 
         const res = await fetch(url, {
             method: 'POST',
