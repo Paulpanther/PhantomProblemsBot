@@ -1,4 +1,4 @@
-import {GroupHandler} from "../src/group_handler";
+import {GroupHandler} from '../src/group_handler';
 
 test('GroupHandler.nextPollTime', () => {
     expect(GroupHandler.nextPollTime('0 16:03', new Date('2024-01-21T14:12:10.666Z')))

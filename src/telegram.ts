@@ -1,6 +1,6 @@
 import 'dotenv/config';
 
-const token = process.env["TOKEN"];
+const token = process.env['TOKEN'];
 
 interface TResponse<T> {
     ok: boolean;
@@ -132,7 +132,7 @@ export class Telegram {
         text: string,
         entities?: TMessageEntity[]
     ): Promise<TMessage> {
-         return await this.request('sendMessage', {
+        return await this.request('sendMessage', {
             chat_id,
             text: Telegram.escape(text),
             parse_mode: 'MarkdownV2',
@@ -176,10 +176,10 @@ export class Telegram {
      * @param method The method of the telegram api
      * @param params Object with keys and values (values will be serialized via JSON.stringify
      */
-    private async request<T>(method: string, params: Record<string, any>): Promise<T> {
+    private async request<T>(method: string, params: Record<string, unknown>): Promise<T> {
         const body =
             Object.fromEntries(Object.entries(params)
-                .filter(([key, value]) => value));
+                .filter(([_key, value]) => value));
         const url = `https://api.telegram.org/bot${token}/${method}`;
 
         const res = await fetch(url, {

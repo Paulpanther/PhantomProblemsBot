@@ -1,6 +1,6 @@
-import {telegram, TUpdate} from "./telegram";
-import {GroupHandler} from "./group_handler";
-import {db} from "./db";
+import {telegram, TUpdate} from './telegram';
+import {GroupHandler} from './group_handler';
+import {db} from './db';
 
 export class App {
     // Bot supports multiple groups at once
@@ -35,7 +35,7 @@ export class App {
                 console.log('Added bot to chat ' + update.my_chat_member.chat.title);
             } else if (status === 'left' && existingGroup) {
                 // Delete from db
-                await db.group.delete({where: {id}})
+                await db.group.delete({where: {id}});
                 // Remove handler
                 existingGroup.destroy();
                 this.groups.splice(this.groups.indexOf(existingGroup), 1);
@@ -62,6 +62,6 @@ export class App {
                 command: 'pollquestion',
                 description: 'Override default question text for attendance poll'
             }
-        ])
+        ]);
     }
 }

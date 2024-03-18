@@ -1,6 +1,6 @@
-import {Telegram, telegram, TMessage, TUpdate, TUpdateListener} from "./telegram";
-import {db} from "./db";
-import {Group} from "@prisma/client";
+import {Telegram, telegram, TMessage, TUpdate, TUpdateListener} from './telegram';
+import {db} from './db';
+import {Group} from '@prisma/client';
 
 export class GroupHandler {
     private readonly callback: TUpdateListener;
@@ -29,14 +29,14 @@ export class GroupHandler {
         const payload = Telegram.textAfterCommand(message.text, command);
 
         switch (commandText) {
-            case 'polltime': return this.commandPollTime(payload);
-            case 'pollquestion': return this.commandPollQuestion(payload);
+        case 'polltime': return this.commandPollTime(payload);
+        case 'pollquestion': return this.commandPollQuestion(payload);
         }
     }
 
     private async commandPollTime(value: string) {
         if (value.trim().length === 0) {
-            await telegram.sendMessage(this.id, (await this.dbGroup()).pollTime ?? 'no current poll time')
+            await telegram.sendMessage(this.id, (await this.dbGroup()).pollTime ?? 'no current poll time');
             return;
         }
 
@@ -54,7 +54,7 @@ export class GroupHandler {
             }
         });
         await this.updatePollTimeout();
-        await telegram.sendMessage(this.id, `Set poll time. Next poll at ${result.date.toLocaleDateString('de-DE')} ${result.date.toLocaleTimeString('de-DE')}`)
+        await telegram.sendMessage(this.id, `Set poll time. Next poll at ${result.date.toLocaleDateString('de-DE')} ${result.date.toLocaleTimeString('de-DE')}`);
     }
 
     public static nextPollTime(value: string, now: Date): {date: Date, pollTime: string} | undefined {
@@ -98,7 +98,7 @@ export class GroupHandler {
 
     private async commandPollQuestion(value: string) {
         if (value.trim().length === 0) {
-            await telegram.sendMessage(this.id, (await this.dbGroup()).pollQuestion)
+            await telegram.sendMessage(this.id, (await this.dbGroup()).pollQuestion);
             return;
         }
 
@@ -129,7 +129,7 @@ export class GroupHandler {
 
     private async sendPoll() {
         const question = (await this.dbGroup()).pollQuestion;
-        await telegram.sendPoll(this.id, question, ['Yes', 'Maybe', 'No'], false, false)
+        await telegram.sendPoll(this.id, question, ['Yes', 'Maybe', 'No'], false, false);
     }
 
     private async dbGroup(): Promise<Group> {
