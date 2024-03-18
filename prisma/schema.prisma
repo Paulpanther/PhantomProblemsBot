@@ -11,5 +11,7 @@ datasource db {
 }
 
 model Group {
-  id    Int   @id
+  id            BigInt    @id
+  pollTime      String?
+  pollQuestion  String    @default("Attendance next session?")
 }

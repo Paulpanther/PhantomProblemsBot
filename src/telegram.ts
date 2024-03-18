@@ -35,6 +35,7 @@ export interface TMessage {
     chat: TChat;
     date: number;
     text?: string;
+    entities?: TMessageEntity[];
 }
 
 export interface TMessageEntity {
@@ -76,14 +77,24 @@ export interface TPollOption {
     voter_count: number;
 }
 
-class Telegram {
+export interface TBotCommand {
+    command: string;
+    description: string;
+}
+
+export type TUpdateListener = (update: TUpdate) => Promise<void>;
+
+export class Telegram {
     private static updateIntervalMillis = 1000;
     private lastUpdateId?: number;
-    private callbacks: Array<(update: TUpdate) => Promise<void>> = [];
+    private callbacks: Array<TUpdateListener> = [];
     private inUpdate = false;
+    private interval?: NodeJS.Timeout;
 
-    public constructor() {
-        setInterval(async () => {
+    private initCallbacks() {
+        if (this.interval) return;
+
+        this.interval = setInterval(async () => {
             if (this.inUpdate) return;
             this.inUpdate = true;
 
@@ -104,8 +115,16 @@ class Telegram {
         }, Telegram.updateIntervalMillis);
     }
 
-    public onUpdate(callback: (update: TUpdate) => Promise<void>) {
+    public onUpdate(callback: TUpdateListener) {
+        // Lazy init callback interval here instead of in constructor to avoid initialization in tests
+        this.initCallbacks();
+
         this.callbacks.push(callback);
+        return callback;
+    }
+
+    public removeUpdateCallback(callback: TUpdateListener) {
+        this.callbacks.splice(this.callbacks.indexOf(callback), 1);
     }
 
     public async sendMessage(
@@ -115,7 +134,7 @@ class Telegram {
     ): Promise<TMessage> {
          return await this.request('sendMessage', {
             chat_id,
-            text,
+            text: Telegram.escape(text),
             parse_mode: 'MarkdownV2',
             entities,
         });
@@ -132,13 +151,18 @@ class Telegram {
     ): Promise<TMessage> {
         return await this.request('sendPoll', {
             chat_id,
-            question,
-            options,
+            question: Telegram.escape(question),
+            options: options.map(o => Telegram.escape(o)),
             is_anonymous,
             allows_multiple_answers,
             open_period,
             close_date
         });
+    }
+
+    public async setMyCommands(commands: TBotCommand[]) {
+        const success = await this.request('setMyCommands', {commands});
+        if (!success) throw new Error('Failed to set commands');
     }
 
     public async getUpdates(offset?: number, limit?: number) {
@@ -167,13 +191,30 @@ class Telegram {
             body: JSON.stringify(body)
         });
         const data = await res.json() as TResponse<T>;
-        // console.log(`${url}\n--> ${JSON.stringify(body)}\n<-- ${JSON.stringify(data)}`);
+        console.log(`${url}\n--> ${JSON.stringify(body)}\n<-- ${JSON.stringify(data)}`);
 
         if (data.ok) {
             return data.result!;
         } else {
             throw new Error(`Telegram Error ${data.error_code} in request to method ${method}: ${data.description}`);
         }
+    }
+
+    public static commandText(text: string, entity: TMessageEntity): string {
+        const command = text.slice(entity.offset, entity.offset + entity.length);
+        return command.slice(1).split('@')[0];
+    }
+
+    public static textAfterCommand(text: string, entity: TMessageEntity): string {
+        return text.slice(entity.offset + entity.length);
+    }
+
+    public static escape(text: string) {
+        return text
+            .replaceAll('.', '\\.')
+            .replaceAll('>', '\\>')
+            .replaceAll('(', '\\(')
+            .replaceAll(')', '\\)');
     }
 }
 
