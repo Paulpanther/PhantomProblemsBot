@@ -1,3 +1,3 @@
-import {ChatHandler} from "./ChatHandler";
+import {App} from "./App";
 
-new ChatHandler();
+new App();

@@ -13,6 +13,20 @@ export interface TUpdate {
     update_id: number;
     message?: TMessage;
     poll_answer?: TPollAnswer;
+    my_chat_member?: TChatMemberUpdated;
+}
+
+export interface TChatMemberUpdated {
+    chat: TChat;
+    from: TUser;
+    date: number;
+    old_chat_member: TChatMember;
+    new_chat_member: TChatMember;
+}
+
+export interface TChatMember {
+    status: 'left' | 'member';
+    user: TUser;
 }
 
 export interface TMessage {
@@ -20,7 +34,7 @@ export interface TMessage {
     from?: TUser;
     chat: TChat;
     date: number;
-    text: string;
+    text?: string;
 }
 
 export interface TMessageEntity {
@@ -143,8 +157,6 @@ class Telegram {
             Object.fromEntries(Object.entries(params)
                 .filter(([key, value]) => value));
         const url = `https://api.telegram.org/bot${token}/${method}`;
-        console.log(url);
-        console.log(body);
 
         const res = await fetch(url, {
             method: 'POST',
@@ -155,6 +167,8 @@ class Telegram {
             body: JSON.stringify(body)
         });
         const data = await res.json() as TResponse<T>;
+        // console.log(`${url}\n--> ${JSON.stringify(body)}\n<-- ${JSON.stringify(data)}`);
+
         if (data.ok) {
             return data.result!;
         } else {
