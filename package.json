@@ -5,6 +5,7 @@
   "scripts": {
     "start": "ts-node src/index.ts",
     "migrate-db": "prisma migrate dev",
+    "create-db": "prisma migrate deploy",
     "test": "jest"
   },
   "author": "Paul Methfessel",
