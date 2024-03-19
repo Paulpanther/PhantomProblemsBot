@@ -80,7 +80,7 @@ export class GroupHandler {
             date.setDate(date.getDate() + day);
 
             // Poll date
-            date.setHours(hour + 1, minutes);
+            date.setHours(hour + 1, minutes + date.getTimezoneOffset());
 
             if (date < now) {
                 // If date is in the past, push one week into future
