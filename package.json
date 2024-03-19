@@ -4,6 +4,7 @@
   "description": "The official manager bot for the world famous band Phantom Problems",
   "scripts": {
     "start": "ts-node src/index.ts",
+    "build": "tsc",
     "migrate-db": "prisma migrate dev",
     "create-db": "prisma migrate deploy",
     "test": "jest"
